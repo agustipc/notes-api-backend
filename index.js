@@ -1,55 +1,61 @@
+require('dotenv').config()
+require('./mongo.js')
+
 const express = require('express')
 const logger = require('./loggerMiddleware')
 const cors = require('cors')
+const Note = require('./models/Note.js')
+
 const app = express()
 
 app.use(express.json())
-
 app.use(cors())
 app.use(logger)
-
-let notes = [
-  {
-    id: 1,
-    content: 'Me tengo que suscribir en Youtube',
-    date: '2019-05-30T17:30:31.098Z',
-    important: true
-  },
-  {
-    id: 2,
-    content: 'Tengo que estudiar las clases de fullstack',
-    date: '2019-05-30T18:39:34.091Z',
-    important: false
-  },
-  {
-    id: 3,
-    content: 'Repasar los retos de JS',
-    date: '2019-05-30T19:20:14.298Z',
-    important: true
-  }
-]
 
 app.get('/', (request, response) => {
   response.send('<h1>Hello World</h1>')
 })
 
 app.get('/api/notes', (request, response) => {
-  response.json(notes)
+  Note.find({}).then((notes) => {
+    response.json(notes)
+  })
 })
 
-app.get('/api/notes/:id', (request, response) => {
-  const id = Number(request.params.id)
-  const note = notes.find((note) => note.id === id)
-  if (note) {
-    response.json(note)
+app.get('/api/notes/:id', (request, response, next) => {
+  Note.findById(request.params.id)
+    .then((note) => {
+      if (note) {
+        return response.json(note)
+      }
+      response.status(404).end()
+    })
+    .catch((error) => {
+      next(error)
+    })
+})
+
+app.put('/api/notes/:id', (request, response, next) => {
+  const { id } = request.params
+  const note = request.body
+
+  const newNoteInfo = {
+    content: note.content,
+    important: note.important
   }
-  response.status(404).end()
+
+  Note.findByIdAndUpdate(id, newNoteInfo, { new: true }).then((result) => {
+    response.json(result)
+  })
 })
 
-app.delete('/api/notes/:id', (request, response) => {
-  const id = Number(request.params.id)
-  notes = notes.filter((note) => note.id !== id)
-  response.status(204).end()
+app.delete('/api/notes/:id', (request, response, next) => {
+  const { id } = request.params
+  Note.findByIdAndRemove(id)
+    .then((result) => {
+      response.status(204).end()
+    })
+    .catch((error) => next(error))
 })
 
 app.post('/api/notes', (request, response) => {
@@ -59,19 +65,26 @@ app.post('/api/notes', (request, response) => {
     return response.status(400).json({ error: 'note.content is missing' })
   }
 
-  const ids = notes.map((note) => note.id)
-  const maxId = Math.max(...ids)
-
-  const newNote = {
-    id: maxId + 1,
+  const newNote = new Note({
     content: note.content,
     important: typeof note.important !== 'undefined' ? note.important : false,
     date: new Date().toISOString()
+  })
+
+  newNote.save().then((savedNote) => {
+    response.json(savedNote)
+  })
+})
+
+// middlewares que pasaran despues del next de un error
+app.use((error, request, response, next) => {
+  console.error(error)
+  console.log(error.name)
+  if (error.name === 'CastError') {
+    response.status(400).send({ error: 'id used is malformed' })
+  } else {
+    response.status(500).end()
   }
-
-  notes = [...notes, newNote]
-
-  response.status(201).json(newNote)
 })
 
 app.use((request, response) => {
