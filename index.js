@@ -5,6 +5,8 @@ const express = require('express')
 const logger = require('./loggerMiddleware')
 const cors = require('cors')
 const Note = require('./models/Note.js')
+const notFound = require('./middleware/notFound.js')
+const handleErrors = require('./middleware/handleErrors.js')
 
 const app = express()
 
@@ -51,8 +53,8 @@ app.put('/api/notes/:id', (request, response, next) => {
 
 app.delete('/api/notes/:id', (request, response, next) => {
   const { id } = request.params
-  Note.findByIdAndRemove(id)
-    .then((result) => {
+  Note.findByIdAndDelete(id)
+    .then(() => {
       response.status(204).end()
     })
     .catch((error) => next(error))
@@ -76,23 +78,13 @@ app.post('/api/notes', (request, response) => {
   })
 })
 
+app.use(notFound)
+
 // middlewares que pasaran despues del next de un error
-app.use((error, request, response, next) => {
-  console.error(error)
-  console.log(error.name)
-  if (error.name === 'CastError') {
-    response.status(400).send({ error: 'id used is malformed' })
-  } else {
-    response.status(500).end()
-  }
-})
-
-app.use((request, response) => {
-  response.status(404).json({ error: 'Not Found' })
-})
-
+app.use(handleErrors)
 // Using Heroku PORT
-const PORT = process.env.PORT || 3001
+const PORT = process.env.PORT
 
-app.listen(PORT)
-console.log(`Server running on port ${PORT}`)
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`)
+})
