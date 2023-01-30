@@ -46,9 +46,11 @@ app.put('/api/notes/:id', (request, response, next) => {
     important: note.important
   }
 
-  Note.findByIdAndUpdate(id, newNoteInfo, { new: true }).then((result) => {
-    response.json(result)
-  })
+  Note.findByIdAndUpdate(id, newNoteInfo, { new: true })
+    .then((result) => {
+      response.json(result)
+    })
+    .catch((error) => next(error))
 })
 
 app.delete('/api/notes/:id', (request, response, next) => {
@@ -60,7 +62,7 @@ app.delete('/api/notes/:id', (request, response, next) => {
     .catch((error) => next(error))
 })
 
-app.post('/api/notes', (request, response) => {
+app.post('/api/notes', (request, response, next) => {
   const note = request.body
 
   if (!note || !note.content) {
@@ -73,9 +75,12 @@ app.post('/api/notes', (request, response) => {
     date: new Date().toISOString()
   })
 
-  newNote.save().then((savedNote) => {
-    response.json(savedNote)
-  })
+  newNote
+    .save()
+    .then((savedNote) => {
+      response.json(savedNote)
+    })
+    .catch((error) => next(error))
 })
 
 app.use(notFound)
