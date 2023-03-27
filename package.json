@@ -4,10 +4,11 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "dev": "nodemon index.js",
-    "start": "node index.js",
+    "dev": "NODE_ENV=development nodemon index.js",
+    "start": "NODE_ENV=production node index.js",
     "lint": "eslint .",
-    "test": "jest --verbose"
+    "test": "NODE_ENV=test jest --verbose --silent",
+    "test:watch": "npm run test -- --watch"
   },
   "keywords": [],
   "author": "",
@@ -15,7 +16,8 @@
   "devDependencies": {
     "jest": "^29.5.0",
     "nodemon": "2.0.20",
-    "standard": "17.0.0"
+    "standard": "17.0.0",
+    "supertest": "^6.3.3"
   },
   "dependencies": {
     "@sentry/node": "^7.37.2",
