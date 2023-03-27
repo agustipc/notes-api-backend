@@ -15,6 +15,7 @@ const app = express()
 app.use(express.json())
 app.use(cors())
 app.use(logger)
+app.use(express.static('images'))
 
 Sentry.init({
   dsn: 'https://8d6250e8d9aa466e9c2f1e8802bcac4e@o4504594314166272.ingest.sentry.io/4504690688524288',
