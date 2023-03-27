@@ -1,23 +1,8 @@
 const mongoose = require('mongoose')
-const supertest = require('supertest')
 
-const { app, server } = require('../index')
+const { server } = require('../index')
 const Note = require('../models/Note')
-
-const api = supertest(app)
-
-const initialNotes = [
-  {
-    content: 'Aprendiendo FullStack JS',
-    important: true,
-    date: new Date()
-  },
-  {
-    content: 'Using Jest on testing',
-    import: false,
-    date: new Date()
-  }
-]
+const { api, initialNotes, getAllContentFromNotes } = require('./helpers')
 
 beforeEach(async () => {
   await Note.deleteMany({})
@@ -38,14 +23,12 @@ describe('get', () => {
   })
 
   test('there are two notes', async () => {
-    const response = await api.get('/api/notes')
+    const { response } = await getAllContentFromNotes()
     expect(response.body).toHaveLength(initialNotes.length)
   })
 
   test('first note has correct content', async () => {
-    const response = await api.get('/api/notes')
-
-    const contents = response.body.map((note) => note.content)
+    const { contents } = await getAllContentFromNotes()
 
     expect(contents).toContain(initialNotes[0].content)
   })
@@ -63,8 +46,7 @@ describe('post', () => {
       .expect(200)
       .expect('Content-Type', /application\/json/)
 
-    const response = await api.get('/api/notes')
-    const contents = response.body.map((note) => note.content)
+    const { contents, response } = await getAllContentFromNotes()
 
     expect(response.body).toHaveLength(initialNotes.length + 1)
     expect(contents).toContain(newNote.content)
@@ -76,11 +58,12 @@ describe('post', () => {
     }
     await api.post('/api/notes').send(newNote).expect(400)
 
-    const response = await api.get('/api/notes')
+    const { response } = await getAllContentFromNotes()
 
     expect(response.body).toHaveLength(initialNotes.length)
   })
 })
+
 afterAll(() => {
   mongoose.connection.close()
   server.close()
