@@ -42,10 +42,9 @@ app.get('/', (request, response) => {
   response.send('<h1>Hello World</h1>')
 })
 
-app.get('/api/notes', (request, response) => {
-  Note.find({}).then((notes) => {
-    response.json(notes)
-  })
+app.get('/api/notes', async (request, response) => {
+  const notes = await Note.find({})
+  response.json(notes)
 })
 
 app.get('/api/notes/:id', (request, response, next) => {
@@ -77,16 +76,18 @@ app.put('/api/notes/:id', (request, response, next) => {
     .catch((error) => next(error))
 })
 
-app.delete('/api/notes/:id', (request, response, next) => {
-  const { id } = request.params
-  Note.findByIdAndDelete(id)
-    .then(() => {
-      response.status(204).end()
-    })
-    .catch((error) => next(error))
+app.delete('/api/notes/:id', async (request, response, next) => {
+  try {
+    const { id } = request.params
+    await Note.findByIdAndDelete(id)
+
+    response.status(204).end()
+  } catch (e) {
+    next(e)
+  }
 })
 
-app.post('/api/notes', (request, response, next) => {
+app.post('/api/notes', async (request, response, next) => {
   const note = request.body
 
   if (!note || !note.content) {
@@ -99,12 +100,12 @@ app.post('/api/notes', (request, response, next) => {
     date: new Date().toISOString()
   })
 
-  newNote
-    .save()
-    .then((savedNote) => {
-      response.json(savedNote)
-    })
-    .catch((error) => next(error))
+  try {
+    const savedNote = await newNote.save()
+    response.json(savedNote)
+  } catch (e) {
+    next(e)
+  }
 })
 
 app.use(notFound)
