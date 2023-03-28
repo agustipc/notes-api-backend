@@ -12,6 +12,8 @@ const handleErrors = require('./middleware/handleErrors.js')
 
 const app = express()
 
+const usersRouter = require('./controllers/users')
+
 app.use(express.json())
 app.use(cors())
 app.use(logger)
@@ -107,6 +109,8 @@ app.post('/api/notes', async (request, response, next) => {
     next(e)
   }
 })
+
+app.use('/api/users', usersRouter)
 
 app.use(notFound)
 
