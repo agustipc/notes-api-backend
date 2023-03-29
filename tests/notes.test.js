@@ -91,6 +91,11 @@ describe('delete', () => {
 
     expect(response.body).toHaveLength(initialNotes.length)
   })
+
+  afterAll(() => {
+    mongoose.connection.close()
+    server.close()
+  })
 })
 
 afterAll(() => {

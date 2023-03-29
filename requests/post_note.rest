@@ -1,0 +1,8 @@
+POST http://localhost:3001/api/notes/
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY0MjM0NzA4NTQ5NDYxODZlOGE4NzMwMiIsInVzZXJuYW1lIjoiYWd1c3RpcGMiLCJpYXQiOjE2ODAwODg3MzcsImV4cCI6MTY4MDY5MzUzN30.la9X3f33yeCHjvR312dmO0BI2ckRIwk-Noh_EHg06oc
+
+{
+    "content": "fullstack bootcamp",
+    "important": false
+}

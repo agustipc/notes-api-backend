@@ -15,3 +15,7 @@ mongoose
   .catch((error) => {
     console.error(error)
   })
+
+process.on('uncaughtException', () => {
+  mongoose.disconnect()
+})
